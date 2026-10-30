@@ -9,6 +9,7 @@ export type ReportRow = {
   project: string;
   email: string;
   hours: number;
+  task: string;
   description: string;
 };
 
@@ -41,7 +42,7 @@ function args(f: ReportFilters) {
 export async function reportRows(f: ReportFilters, limit = 100000) {
   return query<ReportRow>(
     `SELECT to_char(e.work_date, 'YYYY-MM-DD') AS work_date, p.name AS project, e.email,
-            e.hours::float8 AS hours, e.description
+            e.hours::float8 AS hours, e.task, e.description
      FROM time_entries e JOIN projects p ON p.id = e.project_id
      ${WHERE}
      ORDER BY e.work_date, p.name, e.email, e.id

@@ -30,18 +30,9 @@ const SCHEMA = [
      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
    )`,
+  `ALTER TABLE time_entries ADD COLUMN IF NOT EXISTS task TEXT NOT NULL DEFAULT ''`,
   `CREATE INDEX IF NOT EXISTS time_entries_email_date_idx ON time_entries (email, work_date)`,
   `CREATE INDEX IF NOT EXISTS time_entries_project_date_idx ON time_entries (project_id, work_date)`,
-  `CREATE TABLE IF NOT EXISTS login_codes (
-     id BIGSERIAL PRIMARY KEY,
-     email TEXT NOT NULL,
-     code_hash TEXT NOT NULL,
-     attempts INTEGER NOT NULL DEFAULT 0,
-     used BOOLEAN NOT NULL DEFAULT FALSE,
-     expires_at TIMESTAMPTZ NOT NULL,
-     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-   )`,
-  `CREATE INDEX IF NOT EXISTS login_codes_email_idx ON login_codes (email, created_at)`,
   `CREATE TABLE IF NOT EXISTS sessions (
      token_hash TEXT PRIMARY KEY,
      email TEXT NOT NULL,

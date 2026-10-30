@@ -134,11 +134,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           )}
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Date</th><th>Project</th><th>Person</th><th className="num">Hours</th><th>Description</th></tr></thead>
+              <thead><tr><th>Date</th><th>Project</th><th>Person</th><th>Task</th><th className="num">Hours</th><th>Work done</th></tr></thead>
               <tbody>
                 {rows.slice(0, DISPLAY_LIMIT).map((r, i) => (
                   <tr key={i}>
-                    <td className="nowrap">{r.work_date}</td><td>{r.project}</td><td>{r.email}</td>
+                    <td className="nowrap">{r.work_date}</td><td>{r.project}</td><td>{r.email}</td><td>{r.task}</td>
                     <td className="num">{r.hours.toFixed(2)}</td><td className="desc">{r.description}</td>
                   </tr>
                 ))}

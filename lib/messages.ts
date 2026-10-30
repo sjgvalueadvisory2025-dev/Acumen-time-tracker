@@ -1,15 +1,12 @@
 // Fixed messages referenced by short codes in the URL (?m=... / ?e=...), so no
 // arbitrary text from the query string is ever shown on a page.
 const MESSAGES: Record<string, string> = {
-  code_sent: "If that email has access, a 6-digit code is on its way. It expires in 10 minutes.",
   bad_email: "Please enter a valid email address.",
-  bad_code: "That code is incorrect or has expired. Request a new one if needed.",
-  no_pending: "Please enter your email first.",
-  send_failed: "We could not send the email right now. Please try again in a few minutes.",
+  no_access: "This email does not have access. Ask your admin to add you to a project.",
   entry_added: "Time entry saved.",
   entry_updated: "Time entry updated.",
   entry_deleted: "Time entry deleted.",
-  bad_entry: "Please choose a project, a valid date and hours between 0.01 and 24.",
+  bad_entry: "Please choose a project, enter a task, a valid date and hours between 0.01 and 24.",
   not_member: "You are not a member of that project.",
   project_created: "Project created.",
   project_updated: "Project updated.",

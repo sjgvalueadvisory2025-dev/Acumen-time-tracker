@@ -9,9 +9,10 @@ function readEntry(formData: FormData) {
   const projectId = parseId(formData.get("project_id"));
   const date = formData.get("work_date");
   const hours = parseHours(formData.get("hours"));
-  const description = str(formData.get("description"), 1000);
-  if (!projectId || !isIsoDate(date) || hours === null) return null;
-  return { projectId, date, hours, description };
+  const task = str(formData.get("task"), 200);
+  const description = str(formData.get("description"), 2000);
+  if (!projectId || !task || !isIsoDate(date) || hours === null) return null;
+  return { projectId, date, hours, task, description };
 }
 
 export async function addEntryAction(formData: FormData) {
@@ -21,9 +22,9 @@ export async function addEntryAction(formData: FormData) {
   if (!(await isProjectMember(user.email, entry.projectId))) redirect("/?e=not_member");
 
   await query(
-    `INSERT INTO time_entries (project_id, email, work_date, hours, description)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [entry.projectId, user.email, entry.date, entry.hours, entry.description],
+    `INSERT INTO time_entries (project_id, email, work_date, hours, task, description)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [entry.projectId, user.email, entry.date, entry.hours, entry.task, entry.description],
   );
   redirect("/?m=entry_added");
 }
@@ -38,9 +39,9 @@ export async function updateEntryAction(formData: FormData) {
   // People can only edit their own entries.
   const rows = await query(
     `UPDATE time_entries
-     SET project_id = $3, work_date = $4, hours = $5, description = $6, updated_at = now()
+     SET project_id = $3, work_date = $4, hours = $5, task = $6, description = $7, updated_at = now()
      WHERE id = $1 AND email = $2 RETURNING id`,
-    [id, user.email, entry.projectId, entry.date, entry.hours, entry.description],
+    [id, user.email, entry.projectId, entry.date, entry.hours, entry.task, entry.description],
   );
   redirect(rows.length ? "/?m=entry_updated" : "/?e=not_found");
 }

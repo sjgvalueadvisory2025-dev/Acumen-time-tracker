@@ -6,7 +6,7 @@ import { Flash } from "@/components/Flash";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { addEntryAction, deleteEntryAction, updateEntryAction } from "./entries-actions";
 
-type Entry = { id: string; project_id: number; project: string; work_date: string; hours: number; description: string };
+type Entry = { id: string; project_id: number; project: string; work_date: string; hours: number; task: string; description: string };
 
 function weekStart(iso: string): string {
   const d = new Date(iso + "T00:00:00Z");
@@ -24,7 +24,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
   const entries = await query<Entry>(
     `SELECT e.id, e.project_id, p.name AS project, to_char(e.work_date, 'YYYY-MM-DD') AS work_date,
-            e.hours::float8 AS hours, e.description
+            e.hours::float8 AS hours, e.task, e.description
      FROM time_entries e JOIN projects p ON p.id = e.project_id
      WHERE e.email = $1 AND e.work_date >= ($2::date - 60)
      ORDER BY e.work_date DESC, e.id DESC
@@ -76,8 +76,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
             </label>
           </div>
           <label>
-            Description (optional)
-            <textarea name="description" rows={2} maxLength={1000} defaultValue={editing?.description ?? ""} />
+            Task
+            <input name="task" required maxLength={200} placeholder="e.g. Client meeting, Design review"
+              defaultValue={editing?.task ?? ""} />
+          </label>
+          <label>
+            Work done (optional)
+            <textarea name="description" rows={3} maxLength={2000} placeholder="Describe the work you did"
+              defaultValue={editing?.description ?? ""} />
           </label>
           <div className="row">
             <button type="submit">{editing ? "Save changes" : "Add entry"}</button>
@@ -93,13 +99,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Date</th><th>Project</th><th className="num">Hours</th><th>Description</th><th></th></tr>
+              <tr><th>Date</th><th>Project</th><th>Task</th><th className="num">Hours</th><th>Work done</th><th></th></tr>
             </thead>
             <tbody>
               {entries.map((e) => (
                 <tr key={e.id}>
                   <td className="nowrap">{e.work_date}</td>
                   <td>{e.project}</td>
+                  <td>{e.task}</td>
                   <td className="num">{e.hours.toFixed(2)}</td>
                   <td className="desc">{e.description}</td>
                   <td className="actions">
