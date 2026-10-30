@@ -17,6 +17,8 @@ const MESSAGES: Record<string, string> = {
   invalid_emails: "Some email addresses were invalid and were skipped.",
   no_emails: "Please enter at least one valid email address.",
   confirm_delete: "Type the project name exactly to confirm deletion.",
+  details_saved: "Your details were saved.",
+  bad_name: "Please enter your name (up to 100 characters).",
   not_found: "Not found.",
 };
 

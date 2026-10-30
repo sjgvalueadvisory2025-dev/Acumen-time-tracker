@@ -7,6 +7,7 @@ export type ReportFilters = { projectId: number | null; email: string | null; fr
 export type ReportRow = {
   work_date: string;
   project: string;
+  person: string;
   email: string;
   hours: number;
   task: string;
@@ -42,8 +43,10 @@ function args(f: ReportFilters) {
 export async function reportRows(f: ReportFilters, limit = 100000) {
   return query<ReportRow>(
     `SELECT to_char(e.work_date, 'YYYY-MM-DD') AS work_date, p.name AS project, e.email,
+            COALESCE(NULLIF(pe.name, ''), e.email) AS person,
             e.hours::float8 AS hours, e.task, e.description
      FROM time_entries e JOIN projects p ON p.id = e.project_id
+     LEFT JOIN people pe ON pe.email = e.email
      ${WHERE}
      ORDER BY e.work_date, p.name, e.email, e.id
      LIMIT ${Math.floor(limit)}`,
@@ -52,12 +55,15 @@ export async function reportRows(f: ReportFilters, limit = 100000) {
 }
 
 export async function reportSummary(f: ReportFilters) {
-  return query<{ project: string; email: string; hours: number; entries: number }>(
-    `SELECT p.name AS project, e.email, sum(e.hours)::float8 AS hours, count(*)::int AS entries
+  return query<{ project: string; person: string; email: string; hours: number; entries: number }>(
+    `SELECT p.name AS project, e.email,
+            COALESCE(NULLIF(pe.name, ''), e.email) AS person,
+            sum(e.hours)::float8 AS hours, count(*)::int AS entries
      FROM time_entries e JOIN projects p ON p.id = e.project_id
+     LEFT JOIN people pe ON pe.email = e.email
      ${WHERE}
-     GROUP BY p.name, e.email
-     ORDER BY p.name, e.email`,
+     GROUP BY p.name, e.email, pe.name
+     ORDER BY p.name, person`,
     args(f),
   );
 }

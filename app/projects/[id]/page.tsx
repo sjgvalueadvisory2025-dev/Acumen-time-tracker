@@ -14,7 +14,7 @@ import {
 } from "../actions";
 
 type Project = { id: number; name: string; description: string; archived: boolean; created_by: string; created: string };
-type Member = { email: string; hours: number; last_entry: string | null; is_member: boolean };
+type Member = { email: string; name: string; hours: number; last_entry: string | null; is_member: boolean };
 
 export default async function ProjectPage({
   params,
@@ -38,6 +38,7 @@ export default async function ProjectPage({
   // Current members plus anyone who logged time before being removed.
   const people = await query<Member>(
     `SELECT x.email,
+            COALESCE(max(pe.name), '') AS name,
             COALESCE(sum(e.hours), 0)::float8 AS hours,
             to_char(max(e.work_date), 'YYYY-MM-DD') AS last_entry,
             bool_or(x.is_member) AS is_member
@@ -45,6 +46,7 @@ export default async function ProjectPage({
        SELECT email, TRUE AS is_member FROM project_members WHERE project_id = $1
        UNION SELECT DISTINCT email, FALSE FROM time_entries WHERE project_id = $1
      ) x
+     LEFT JOIN people pe ON pe.email = x.email
      LEFT JOIN time_entries e ON e.project_id = $1 AND e.email = x.email
      GROUP BY x.email
      ORDER BY bool_or(x.is_member) DESC, x.email`,
@@ -79,11 +81,15 @@ export default async function ProjectPage({
 
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Email</th><th className="num">Hours</th><th>Last entry</th><th></th></tr></thead>
+            <thead><tr><th>Person</th><th className="num">Hours</th><th>Last entry</th><th></th></tr></thead>
             <tbody>
               {people.map((m) => (
                 <tr key={m.email}>
-                  <td>{m.email} {!m.is_member && <span className="badge">Removed</span>}</td>
+                  <td>
+                    {m.name && <div>{m.name}</div>}
+                    <span className={m.name ? "muted small" : undefined}>{m.email}</span>{" "}
+                    {!m.is_member && <span className="badge">Removed</span>}
+                  </td>
                   <td className="num">{m.hours.toFixed(2)}</td>
                   <td>{m.last_entry ?? "—"}</td>
                   <td className="actions">

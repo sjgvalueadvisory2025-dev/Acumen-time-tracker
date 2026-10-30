@@ -12,10 +12,18 @@ export async function GET(req: NextRequest) {
   let lines: string[];
   if (summaryOnly) {
     const rows = await reportSummary(filters);
-    lines = ["Project,Person,Entries,Hours", ...rows.map((r) => [r.project, r.email, r.entries, r.hours.toFixed(2)].map(csvCell).join(","))];
+    lines = [
+      "Project,Person,Email,Entries,Hours",
+      ...rows.map((r) => [r.project, r.person, r.email, r.entries, r.hours.toFixed(2)].map(csvCell).join(",")),
+    ];
   } else {
     const rows = await reportRows(filters);
-    lines = ["Date,Project,Person,Task,Hours,Work done", ...rows.map((r) => [r.work_date, r.project, r.email, r.task, r.hours.toFixed(2), r.description].map(csvCell).join(","))];
+    lines = [
+      "Date,Project,Person,Email,Task,Hours,Work done",
+      ...rows.map((r) =>
+        [r.work_date, r.project, r.person, r.email, r.task, r.hours.toFixed(2), r.description].map(csvCell).join(","),
+      ),
+    ];
   }
 
   const range = filters.from === "1900-01-01" ? "all-time" : `${filters.from}_to_${filters.to}`;

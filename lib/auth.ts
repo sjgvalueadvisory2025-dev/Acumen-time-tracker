@@ -10,7 +10,12 @@ const SESSION_DAYS = 30;
 const isProd = process.env.NODE_ENV === "production";
 export const SESSION_COOKIE = isProd ? "__Host-tt_session" : "tt_session";
 
-export type User = { email: string; isAdmin: boolean };
+export type User = { email: string; name: string; isAdmin: boolean };
+
+/** What to show for a person: the name they set, falling back to their email. */
+export function displayName(u: { name?: string | null; email: string }): string {
+  return u.name?.trim() ? u.name.trim() : u.email;
+}
 
 function hash(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -65,14 +70,16 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token || token.length > 100) return null;
 
-  const [row] = await query<{ email: string }>(
-    `SELECT email FROM sessions WHERE token_hash = $1 AND expires_at > now()`,
+  const [row] = await query<{ email: string; name: string }>(
+    `SELECT s.email, COALESCE(p.name, '') AS name
+     FROM sessions s LEFT JOIN people p ON p.email = s.email
+     WHERE s.token_hash = $1 AND s.expires_at > now()`,
     [hash(token)],
   );
   if (!row) return null;
   // Access is re-checked on every request, so removing someone takes effect immediately.
   if (!(await isAllowed(row.email))) return null;
-  return { email: row.email, isAdmin: isAdminEmail(row.email) };
+  return { email: row.email, name: row.name, isAdmin: isAdminEmail(row.email) };
 });
 
 export async function requireUser(): Promise<User> {
@@ -85,6 +92,15 @@ export async function requireAdmin(): Promise<User> {
   const user = await requireUser();
   if (!user.isAdmin) redirect("/");
   return user;
+}
+
+/** Saves the signed-in person's own display name. */
+export async function saveMyName(email: string, name: string): Promise<void> {
+  await query(
+    `INSERT INTO people (email, name) VALUES ($1, $2)
+     ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, updated_at = now()`,
+    [email, name],
+  );
 }
 
 export async function signOut(): Promise<void> {

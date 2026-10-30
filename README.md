@@ -28,8 +28,10 @@ The app creates its database tables automatically the first time it runs.
 2. **Projects → Create a project**: give it a name and paste the email addresses of the people who
    will log hours (one per line or comma-separated). Tick "Add me as a member" if you also log time.
 3. Share the website address. People sign in with their email; only emails on an active project
-   (or in `ADMIN_EMAILS`) can get in.
+   (or in `ADMIN_EMAILS`) can get in. Anyone else is told the email has no access and to ask an admin.
 4. **Log time**: project, date, hours, task and work done. People can edit or delete their own entries.
+   Everyone can open **their name in the top right → Your details** to set the name shown against their
+   hours in reports and CSV downloads, and to see which projects they can charge to.
 5. **Reports**: pick a project, person and date range (or a preset like "Last month") and download
    the detailed or summary CSV. Members see only their own hours; admins see everyone's.
 

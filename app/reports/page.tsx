@@ -41,8 +41,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
     ? await query<{ id: number; name: string }>(`SELECT id, name FROM projects ORDER BY archived, name`)
     : await memberProjects(user.email);
   const people = user.isAdmin
-    ? await query<{ email: string }>(
-        `SELECT email FROM project_members UNION SELECT email FROM time_entries ORDER BY email`,
+    ? await query<{ email: string; label: string }>(
+        `SELECT x.email, COALESCE(NULLIF(pe.name, ''), x.email) AS label
+         FROM (SELECT email FROM project_members UNION SELECT email FROM time_entries) x
+         LEFT JOIN people pe ON pe.email = x.email
+         ORDER BY label`,
       )
     : [];
 
@@ -72,7 +75,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               Person
               <select name="person" defaultValue={f.email ?? ""}>
                 <option value="">Everyone</option>
-                {people.map((p) => <option key={p.email} value={p.email}>{p.email}</option>)}
+                {people.map((p) => <option key={p.email} value={p.email}>{p.label}</option>)}
               </select>
             </label>
           )}
@@ -114,7 +117,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               <tbody>
                 {summary.map((r) => (
                   <tr key={r.project + r.email}>
-                    <td>{r.project}</td><td>{r.email}</td><td className="num">{r.entries}</td><td className="num">{r.hours.toFixed(2)}</td>
+                    <td>{r.project}</td>
+                    <td>{r.person}<div className="muted small">{r.email}</div></td>
+                    <td className="num">{r.entries}</td><td className="num">{r.hours.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -138,7 +143,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               <tbody>
                 {rows.slice(0, DISPLAY_LIMIT).map((r, i) => (
                   <tr key={i}>
-                    <td className="nowrap">{r.work_date}</td><td>{r.project}</td><td>{r.email}</td><td>{r.task}</td>
+                    <td className="nowrap">{r.work_date}</td><td>{r.project}</td><td title={r.email}>{r.person}</td><td>{r.task}</td>
                     <td className="num">{r.hours.toFixed(2)}</td><td className="desc">{r.description}</td>
                   </tr>
                 ))}

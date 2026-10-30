@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
+import { displayName, getCurrentUser } from "@/lib/auth";
 import { signOutAction } from "./login/actions";
 import "./globals.css";
 
@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/">Log time</Link>
                 {user.isAdmin && <Link href="/projects">Projects</Link>}
                 <Link href="/reports">Reports</Link>
-                <span className="who" title={user.email}>{user.email}</span>
+                <Link href="/profile" className="who" title={user.email}>{displayName(user)}</Link>
                 <form action={signOutAction}>
                   <button type="submit" className="link-button">Sign out</button>
                 </form>

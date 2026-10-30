@@ -20,6 +20,11 @@ const SCHEMA = [
      PRIMARY KEY (project_id, email)
    )`,
   `CREATE INDEX IF NOT EXISTS project_members_email_idx ON project_members (email)`,
+  `CREATE TABLE IF NOT EXISTS people (
+     email TEXT PRIMARY KEY,
+     name TEXT NOT NULL DEFAULT '',
+     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+   )`,
   `CREATE TABLE IF NOT EXISTS time_entries (
      id BIGSERIAL PRIMARY KEY,
      project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
